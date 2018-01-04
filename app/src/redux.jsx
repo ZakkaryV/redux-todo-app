@@ -128,12 +128,33 @@ store.subscribe( () => {
 
 let nextTodoId = 1;
 
+const visibleTodos = (
+    todos,
+    visibilityFilter
+) => {
+
+    switch ( visibilityFilter  ) {
+        case 'SHOW_ALL':
+            return todos;
+        case 'SHOW_ACTIVE':
+            return todos.filter( t => !t.completed );
+        case 'SHOW_COMPLETED':
+            return todos.filter( t => t.completed);
+        default: 
+            return todos;
+    }
+}
+
 const FilterLink = (
     props
 ) => {
 
-    let { filter, children } = props; 
-    
+    let { filter, currentFilter, children } = props; 
+
+    if ( filter === currentFilter ) {
+        return <span>{ children }</span>
+    }
+
     return (
         <a href={''} 
            onClick={ e => { 
@@ -145,6 +166,30 @@ const FilterLink = (
     )
 }
 
+const Todo = ({
+    id,
+    completed,
+    text
+}) => {
+
+    return (
+        <li key={ id }
+            onClick={() => {
+                store.dispatch({ 
+                    type: 'TOGGLE_TO_DO',
+                    id: id    
+                })
+            }}
+            style={{
+                textDecoration: completed ? 
+                    'line-through': 
+                    'none'
+            }}>
+            { text }
+        </li>
+    )
+}
+
 class TodoApp extends React.Component {
     constructor(props) {
         super(props);
@@ -152,8 +197,12 @@ class TodoApp extends React.Component {
 
     render() {
 
-        let { todos, visibilityFilter } = this.props;
+        let { visibilityFilter, todos } = this.props;
 
+        let filteredTodos = visibleTodos(
+            todos,
+            visibilityFilter
+        )
 
         return (
             <div>
@@ -169,22 +218,11 @@ class TodoApp extends React.Component {
                         TestButton
                     </button>
                     <ul>
-                        { todos.map( ( todo, index ) => {
+                        { filteredTodos.map( ( todo, index ) => {
                             return (
-                                <li key={ todo.id }
-                                    onClick={() => {
-                                        store.dispatch({ 
-                                            type: 'TOGGLE_TO_DO',
-                                            id: todo.id    
-                                        })
-                                    }}
-                                    style={{
-                                        textDecoration: todo.completed ? 
-                                            'line-through': 
-                                            'none'
-                                    }}>
-                                    { todo.text }
-                                </li>
+                                <Todo 
+                                    key={ index } 
+                                    { ...todo } />
                             )
                         })}
                     </ul>
@@ -215,7 +253,7 @@ class TodoApp extends React.Component {
 const render = () => {
     ReactDOM.render([
         <TodoApp 
-            todos={ store.getState().todos }/>
+            { ...store.getState() }/>
     ],
         document.getElementById('root')
     );
