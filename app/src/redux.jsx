@@ -248,11 +248,10 @@ const Todo = ({
     )
 }
 
-class TodoApp extends React.Component {
-
-    render() {
-
-        let { visibilityFilter, todos } = this.props;
+const TodoApp = ({
+    visibilityFilter, 
+    todos
+}) => {
 
         let filteredTodos = visibleTodos(
             todos,
@@ -274,7 +273,6 @@ class TodoApp extends React.Component {
                     onFilterClick={ filter => { store.dispatch({ type: 'SET_VISIBILITY_FILTER', filter: filter }) } } />
             </div>
         )
-    }
 }
 
 const render = () => {
